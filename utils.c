@@ -21,7 +21,7 @@ size_t align8(size_t s) {
 	return align(s, 8);
 }
 
-size_t alignn(size_t s, size_t alignment) {
+size_t align(size_t s, size_t alignment) {
 	int power = pow(2, alignment);
 	return ((( ((s) -1) >> power) << power) + alignment);
 }
@@ -303,3 +303,7 @@ void copy_block(m_block src, m_block dest) {
 // 	}
 // 	return start;
 // }
+
+
+
+
