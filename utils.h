@@ -51,9 +51,7 @@ struct malloc_arena_info {
 };
 
 
-// void log(char* text);
-// The function returns a fitting chunk, or NULL if none where found. 
-// After the execution, the argument last points to the last visited chunk. 
+void logger(char* text);
 size_t align8(size_t s);	// 8-byte alignment for every size
 size_t align(size_t s, size_t alignment);
 m_info find_arena(size_t size);
@@ -62,7 +60,7 @@ m_block get_block (void *p);
 m_block buddy_join(m_info arena, m_block b);
 m_block insert_block(m_info arena, size_t s);
 m_block join_free_chunks(m_info arena, m_block b);
-m_block find_free_block(m_info arena, m_block *last, size_t size);
+// m_block find_free_block(m_info arena, m_block *last, size_t size);
 int get_buddy_order(size_t s);
 bool is_pow2(size_t s);
 bool is_valid_address(m_info arena, void *p);
@@ -70,7 +68,6 @@ void deallocate(m_info arena, m_block b);
 void buddy_split(m_info arena, m_block b);
 void copy_block(m_block src, m_block dest);
 void split_block(m_info arena, m_block b, size_t s);
-void allocate(m_info arena, m_block b, size_t s, m_block last);
 
 extern ll kb;
 extern ll max_arena;
