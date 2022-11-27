@@ -9,13 +9,13 @@ size_t m_block_size = 40;
 size_t max_arena_size = 0;
 const int smallest_block = 128;
 
-void log(char* text)
-{
-	FILE *fp; 
-    fp = fopen("data.txt", "a");
-    gets(text);
-    fclose(fp);
-}
+// void log(char* text)
+// {
+// 	FILE *fp; 
+//     fp = fopen("data.txt", "a");
+//     gets(text);
+//     fclose(fp);
+// }
 
 size_t align8(size_t s) {
 	return align(s, 8);

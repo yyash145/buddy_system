@@ -51,7 +51,7 @@ struct malloc_arena_info {
 };
 
 
-void log(char* text);
+// void log(char* text);
 // The function returns a fitting chunk, or NULL if none where found. 
 // After the execution, the argument last points to the last visited chunk. 
 size_t align8(size_t s);	// 8-byte alignment for every size

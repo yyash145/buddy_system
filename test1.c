@@ -51,8 +51,8 @@ void *test() {
   printf("Successfully realloc'd block to %p of size %zd from %p\n", mem7, size*5, mem5);
   assert(mem7 != NULL);
 
-  void *mem8 = realloc(mem7, 32*size);
-  printf("Successfully realloc'd block to %p of size %zd from %p\n", mem8, size*32, mem7);
+  void *mem8 = reallocarray(mem7, 32, size);
+  printf("Successfully realloc'd array to %p of size %zd with each size 32 from %p\n", mem8, size, mem7);
   assert(mem8 != NULL);
 
   void *mem9 = memalign(16, size * 20);
