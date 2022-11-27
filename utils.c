@@ -40,47 +40,52 @@ m_info find_arena(size_t size) {
 }
 
 m_info create_arena(size_t size) {
-	m_info arena;
-	size_t request_memory = max_arena_size;
-	while (request_memory < size) {
-		request_memory += max_arena_size;
+	size_t req_size = max_arena_size;
+	while (req_size < size) {
+		req_size += max_arena_size;
 	}
 
-	if (!arena_head) {
-		void *addr = mmap(NULL, request_memory, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	m_info arena;
+	if (arena_head == NULL) 
+	{
+		void *addr = mmap(NULL, req_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 		if (addr == MAP_FAILED) {
 			printf("MMAP failed\n");
 			return NULL;
 		}
 		arena = (m_info)addr;
-		arena->size = request_memory;
+		arena_head = (void *)arena;
 		arena->next = NULL;
 		arena->prev = NULL;
-		arena_head = (void *)arena;
-	} else {
+		arena->size = req_size;
+	} 
+	else 
+	{
 		m_info start = find_arena(size);
-		if (!start) {
+		if (start == NULL) 
+		{
 			printf("No more arena available\n");
 			return NULL;
 		}
-		void *addr = mmap(start->data, request_memory, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-		if (addr == MAP_FAILED) {
+		void *addr = mmap(start->data, req_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+		if (addr == MAP_FAILED) 
+		{
 			printf("MMAP failed\n");
 			return NULL;
 		}
+		arena->size = req_size;
 		arena = (m_info)addr;
 		start->next = arena;
-		arena->prev = start;
-		arena->size = request_memory;
+		arena->prev = start; 
 	}
-	arena->free_chunk = 0;
-	arena->r_mapped_space = 0;
 	arena->r_mapped = 0;
-	arena->total_space_max = 0;
-	arena->total_space = 0;
-	arena->free_chunk = arena->size;
-	arena->allocation_req = 0;
 	arena->free_req = 0;
+	arena->free_chunk = 0;
+	arena->total_space = 0;
+	arena->r_mapped_space = 0;
+	arena->allocation_req = 0;
+	arena->total_space_max = 0;
+	arena->free_chunk = arena->size;
 	current_arena += 1;
 	return arena;
 }
@@ -95,17 +100,19 @@ m_block buddy_join(m_info arena, m_block b) {
 	while (b->prev != NULL && b->prev->free != NULL) {
 		b = b->prev;
 		void *p = (void *)b->prev;
-		if (p < (void *)arena->start || p > (void *)(arena->data + arena->size)) {
+		if (p < (void *)arena->start || p > (void *)(arena->data + arena->size)) 
+		{
 			b->prev = NULL;
 			break;
 		}
 	}
 	void *p = (void *)b->next;
-	if (p < (void *)arena->start || p > (void *)(arena->data + arena->size)) {
+	if (p < (void *)arena->start || p > (void *)(arena->data + arena->size)) 
+	{
 		b->next = NULL;
 		return (b);
 	}
-	while(b->next && b->next->free) {
+	while(b->next != NULL && b->next->free != NULL) {
 		b = join_free_chunks(arena, b);
 		arena->free_chunk -= 1;
 	}
@@ -131,7 +138,7 @@ m_block insert_block(m_info arena, size_t s) {
 		int order = get_buddy_order(s);
 		first = arena->start;
 		last = arena->start;
-		while(first && first->free == 0 && first->buddy_order != order && first->size < s)
+		while(first != NULL && first->free == 0 && first->buddy_order != order && first->size < s)
 		{
 			void *p = (void *)first->next;
 			if (p < (void *)arena->start || p > (void *)(arena->data + arena->size)) 
@@ -147,7 +154,7 @@ m_block insert_block(m_info arena, size_t s) {
 
 		if (first == NULL) {
 			first = arena->start;
-			while(first && !(first->free && first->buddy_order > order && (first->size)/2 >= s)) {
+			while(first != NULL && first->free == 0 && first->buddy_order <= order && (first->size)/2 < s) {
 				void *p = (void *)first->next;
 				if (p < (void *)arena->start || p > (void *)(arena->data + arena->size)) {
 					first->next = NULL;
@@ -176,12 +183,11 @@ m_block insert_block(m_info arena, size_t s) {
 }
 
 m_block join_free_chunks(m_info arena, m_block b) {
-	if (b->next != NULL && b->next->free != NULL) {		// (b->next != NULL && b->next->free != 0)
+	if (b->next != NULL && b->next->free != NULL) {	
 		b->size += b->next->size + m_block_size;
 		b->next = b->next->next;
-		if (b->next) {
+		if(b->next != NULL) 
 			b->next->prev = b;
-		}
 		b->buddy_order = get_buddy_order(b->size);
 	}
 	return (b);
@@ -251,9 +257,9 @@ void deallocate(m_info arena, m_block b) {
 void buddy_split(m_info arena, m_block b) {
 	b->size = b->size / 2;
 	m_block newb = (m_block)(b->data + b->size);
-	newb->size = b->size - m_block_size;
 	newb->prev = b;
 	newb->next = b->next;
+	newb->size = b->size - m_block_size;
 	b->next = newb;
 	b->ptr = arena->data;
 	b->buddy_order = b->buddy_order - 1;
