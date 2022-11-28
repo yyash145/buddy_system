@@ -13,7 +13,8 @@ void logger(char *text)
 {
 	FILE *fp;
 	fp = fopen("data.txt", "a");
-	gets(text);
+	int size = sizeof(text);
+	fgets(text, size, fp);
 	fclose(fp);
 }
 
@@ -69,10 +70,9 @@ m_info create_arena(size_t size)
 			printf("Mapping failed\n");
 			return NULL;
 		}
-		int rs=req_size;
-		int bud_chain=0;
-		arena->size = rs;
 		arena = (m_info)addr;
+		int rs = req_size;
+		arena->size = rs;
 		start->next = arena;
 		arena->prev = start;
 	}
@@ -111,7 +111,7 @@ m_block get_block(void *p)
 
 m_block buddy_join(m_info arena, m_block b)
 {
-	while (b->prev != NULL && b->prev->free != NULL)
+	while (b->prev != NULL && b->prev->free != 0)
 	{
 		void *p = (void *)b->prev->prev;
 		if (p < (void *)arena->start || p > (void *)(arena->data + arena->size))
@@ -132,7 +132,7 @@ m_block buddy_join(m_info arena, m_block b)
 		b->next = NULL;
 		return (b);
 	}
-	while (b->next != NULL && b->next->free != NULL)
+	while (b->next != NULL && b->next->free != 0)
 	{
 		b = join_free_chunks(arena, b);
 		arena->free_chunk -= 1;
@@ -171,10 +171,10 @@ m_block insert_block(m_info arena, size_t s)
 				last = first;
 				break;
 			}
-			first = first->next;
 			last = first;
+			first = first->next;
 		}
-		if (first == NULL)
+		if(first != NULL)
 		{
 			// do nothing
 		}
@@ -235,7 +235,7 @@ int get_buddy_order(size_t s)
 
 m_block join_free_chunks(m_info arena, m_block b)
 {
-	if (b->next != NULL && b->next->free != NULL)
+	if (b->next != NULL && b->next->free != 0)
 	{
 		b->size += b->next->size + m_block_size;
 		b->next = b->next->next;

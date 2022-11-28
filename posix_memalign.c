@@ -9,7 +9,7 @@ int posix_memalign(void **memptr, size_t alignment, size_t size) {
 	}
 	size_t s = alignn(size, alignment);
 	*memptr = malloc(s);
-	if (memptr) {
+	if (*memptr != NULL) {
  		return (0); // returning the starting address of the block
 	}
 	return ENOMEM;

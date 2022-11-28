@@ -23,7 +23,7 @@ check:	libmalloc.so ${TESTS}
 	LD_PRELOAD=`pwd`/libmalloc.so ./test1
 
 check1:	libmalloc.so test1 t-test1
-	LD_PRELOAD=`pwd`/libmalloc.so ./t-test1
+	LD_PRELOAD=`pwd`/libmalloc.so ./test1
 
 dist: clean
 	dir=`basename $$PWD`; cd ..; tar cvf $$dir.tar ./$$dir; gzip $$dir.tar
