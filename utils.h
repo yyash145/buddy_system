@@ -60,7 +60,7 @@ m_block get_block (void *p);
 m_block buddy_join(m_info arena, m_block b);
 m_block insert_block(m_info arena, size_t s);
 m_block join_free_chunks(m_info arena, m_block b);
-// m_block find_free_block(m_info arena, m_block *last, size_t size);
+m_block find_free_block(m_info arena, m_block *last, size_t size, int order);
 int get_buddy_order(size_t s);
 bool is_pow2(size_t s);
 bool is_valid_address(m_info arena, void *p);

@@ -140,12 +140,59 @@ m_block buddy_join(m_info arena, m_block b)
 	return b;
 }
 
+m_block find_free_block(m_info arena, m_block *last, size_t s, int order){
+	m_block first = arena->start;
+	while (first != NULL && first->free == 0 && first->buddy_order != order && first->size < s)
+	{
+		void *p = (void *)first->next;
+		if (p > (void *)(arena->data + arena->size) || p < (void *)arena->start)
+		{
+			*last = first;
+			first->next = NULL;
+			first = NULL;
+			break;
+		}
+		*last = first;
+		first = first->next;
+	}
+	if(first != NULL)
+	{
+		// do nothing
+	}
+	else
+	{
+		first = arena->start;
+		int div = (first->size)/2;
+		while (first != NULL && first->free == 0 && first->buddy_order <= order && div < s)
+		{
+			void *p = (void *)first->next;
+			if (p < (void *)arena->start)
+			{
+				*last = first;
+				first->next = NULL;
+				first = NULL;
+				break;
+			}
+			else if (p > (void *)(arena->data + arena->size))
+			{
+				*last = first;
+				first->next = NULL;
+				first = NULL;
+				break;
+			}
+			*last = first;
+			first = first->next;
+		}
+	}
+	return first;
+}
+
 m_block insert_block(m_info arena, size_t s)
 {
 	m_block first, last;
 	if (arena->start == NULL)
 	{
-		first = (m_block)arena->data; //
+		first = (m_block)arena->data;
 		arena->start = first;
 		arena->free_chunk = 1;
 		arena->start->size = s;
@@ -153,56 +200,14 @@ m_block insert_block(m_info arena, size_t s)
 		arena->start->prev = NULL;
 		arena->start->next = NULL;
 		arena->start->ptr = arena->data;
-		arena->free_chunk = arena->size;
+		arena->free_space = arena->size;
 		arena->start->buddy_order = get_buddy_order(arena->size);
 	}
 	else
 	{
-		int order = get_buddy_order(s);
-		first = arena->start;
 		last = arena->start;
-		while (first != NULL && first->free == 0 && first->buddy_order != order && first->size < s)
-		{
-			void *p = (void *)first->next;
-			if (p > (void *)(arena->data + arena->size) || p < (void *)arena->start)
-			{
-				first->next = NULL;
-				first = NULL;
-				last = first;
-				break;
-			}
-			last = first;
-			first = first->next;
-		}
-		if(first != NULL)
-		{
-			// do nothing
-		}
-		else
-		{
-			first = arena->start;
-			int div = (first->size) / 2;
-			while (first != NULL && first->free == 0 && first->buddy_order <= order && div < s)
-			{
-				void *p = (void *)first->next;
-				if (p < (void *)arena->start)
-				{
-					first->next = NULL;
-					last = first;
-					first = NULL;
-					break;
-				}
-				else if (p > (void *)(arena->data + arena->size))
-				{
-					first->next = NULL;
-					last = first;
-					first = NULL;
-					break;
-				}
-				last = first;
-				first = first->next;
-			}
-		}
+		int order = get_buddy_order(s);
+		first = find_free_block(arena, &last, s, order);
 	}
 
 	if (first == NULL)

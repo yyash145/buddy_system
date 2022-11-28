@@ -6,7 +6,7 @@ void *realloc(void *p, size_t size) {
 	void *newp = NULL;
 	if (!p || !arena) // if pointer is null just allocate the memory to current break
 		return (malloc(size));
-	if (valid_address (arena, p)) { // Reallocate only if its a valid address, as we need to free the old address
+	if (is_valid_address (arena, p)) { // Reallocate only if its a valid address, as we need to free the old address
 		s = align8(size);
  		b = get_block(p);
 		if (b->size >= s) {
@@ -22,7 +22,7 @@ void *realloc(void *p, size_t size) {
  	 	 	 	return (NULL);
 			}
 		} else {
-			if (b->next && b->next->free && (b->size + block_size() + b->next->size) >= s) { // try joining the next free chunk
+			if (b->next && b->next->free && (b->size + m_block_size + b->next->size) >= s) { // try joining the next free chunk
 				if (mlock(b, s) == 0) {
 					b = buddy_join(arena, b);
 					if (b->buddy_order > get_buddy_order(s)) {

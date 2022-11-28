@@ -1,7 +1,7 @@
 #include "malloc.h"
 
 void *memalign(size_t alignment, size_t size) {
-	if (is_two_power(alignment) != 0) {
+	if (is_pow2(alignment) == true) {
 		errno = EINVAL;
 		return (NULL);
 	}
