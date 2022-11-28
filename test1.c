@@ -8,8 +8,7 @@ void *test() {
   pid_t pid = fork();
   if (pid > 0) {
     // printf("%lu thread parent\n", (unsigned long)pthread_self());
-  } 
-  else if (pid == 0) {
+  } else if (pid == 0) {
     // printf("%lu thread child\n", (unsigned long)pthread_self());
   }
 
@@ -52,8 +51,8 @@ void *test() {
   // printf("Successfully realloc'd block to %p of size %zd from %p\n", mem7, size*5, mem5);
   assert(mem7 != NULL);
 
-  void *mem8 = reallocarray(mem7, 32, size);
-  // printf("Successfully realloc'd array to %p of size %zd with each size 32 from %p\n", mem8, size, mem7);
+  void *mem8 = realloc(mem7, 32*size);
+  // printf("Successfully realloc'd block to %p of size %zd from %p\n", mem8, size*32, mem7);
   assert(mem8 != NULL);
 
   void *mem9 = memalign(16, size * 20);
@@ -68,14 +67,13 @@ void *test() {
 }
 
 int main(int argc, char **argv) {
-  
   pthread_t p1, p2, p3, p4;
   // printf("main: begin\n");
   pthread_create(&p1, NULL, test, NULL);
   pthread_create(&p2, NULL, test, NULL);
   pthread_create(&p3, NULL, test, NULL);
   pthread_create(&p4, NULL, test, NULL);
-  
+  // join waits for the threads to finish
   pthread_join(p1, NULL);
   pthread_join(p2, NULL);
   // printf("main: end\n\n");

@@ -47,19 +47,19 @@ struct memory_block {
 
 ## Struct to hold the arena information
 ```c
-typedef struct my_malloc_arena *malloc_arena;
+typedef struct my_m_info *m_info;
 
-struct my_malloc_arena {
+struct my_m_info {
 	block start;			/* Starting block of the arena */
 	size_t size;			/* Size of the arena */
-	malloc_arena next;    		/* Next arena */
-	malloc_arena prev;    		/* Previous arena */
-	int ordblks;      		/* Number of free chunks */
-	int hblks;     			/* Number of mmapped regions */
-	int hblkhd;    			/* Space allocated in mmapped regions (bytes) */
-	int usmblks;   			/* Maximum total allocated space (bytes) */
-	int uordblks;       		/* Total allocated space (bytes) */
-	int fordblks;       		/* Total free space (bytes) */
+	m_info next;    		/* Next arena */
+	m_info prev;    		/* Previous arena */
+	int free_chunk;      		/* Number of free chunks */
+	int r_mapped;     			/* Number of mmapped regions */
+	int r_mapped_space;    			/* Space allocated in mmapped regions (bytes) */
+	int total_space_max;   			/* Maximum total allocated space (bytes) */
+	int total_space;       		/* Total allocated space (bytes) */
+	int free_space;       		/* Total free space (bytes) */
 	int allocation_req;
         int free_req;
 	pthread_mutex_t lock;
@@ -71,12 +71,12 @@ struct my_malloc_arena {
 ```c
 struct mallinfo {
 	int arenas; 		        /* Total arenas */
-	int ordblks;   			/* Number of free chunks */
-	int hblks;    			/* Number of mmapped regions */
-	int hblkhd;   			/* Space allocated in mmapped regions (bytes) */
-	int usmblks;   			/* Maximum total allocated space (bytes) */
-	int uordblks;  			/* Total allocated space (bytes) */
-	int fordblks;  			/* Total free space (bytes) */
+	int free_chunk;   			/* Number of free chunks */
+	int r_mapped;    			/* Number of mmapped regions */
+	int r_mapped_space;   			/* Space allocated in mmapped regions (bytes) */
+	int total_space_max;   			/* Maximum total allocated space (bytes) */
+	int total_space;  			/* Total allocated space (bytes) */
+	int free_space;  			/* Total free space (bytes) */
 };
 ```
 
@@ -119,4 +119,4 @@ struct mallinfo {
 - the split_block function in [utils.c](utils.c) cut the block passed in argument to make data block of the wanted size and all splitted blocks become part of linked list, so that next time there wont be need to split if any of the existing can satisfy the requested memory.
 - There is at least one malloc arena per CPU core. This library will detect the total number of CPU cores and create that many arenas.
 - Each thread allocates/deallocates from one of these per-cpu arenas.
-- To support fork and thread safe allocation/deallocation, I assign thread specific arena to each thread using __thread malloc_arena arena;
+- To support fork and thread safe allocation/deallocation, I assign thread specific arena to each thread using __thread m_info arena;

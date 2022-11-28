@@ -3,13 +3,13 @@
 #include "utils.h"
 
 struct mallinfo {
-	int arenas; 		//				// Total arenas 
-	int free_chunk; 	// ordblks;   	// Number of free chunks 
-	int r_mapped;		// hblks;    	// Number of mmapped regions 
-	int r_mapped_space; // hblkhd;   	// Space allocated in mmapped regions (bytes) 
-	int total_space_max;// usmblks;   	// Maximum total allocated space (bytes) 
-	int total_space;	// uordblks;  	// Total allocated space (bytes) 
-	int	free_space;		// fordblks;  	// Total free space (bytes) 
+	int arenas; 			// Total arenas 
+	int free_chunk; 	  	// Number of free chunks 
+	int r_mapped;			// Number of mmapped regions 
+	int r_mapped_space; 	// Space allocated in mmapped regions (bytes) 
+	int total_space_max;  	// Maximum total allocated space (bytes) 
+	int total_space;		// Total allocated space (bytes) 
+	int	free_space;			// Total free space (bytes) 
 };
 
 void *malloc(size_t size);

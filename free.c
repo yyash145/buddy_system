@@ -2,7 +2,7 @@
 
 void free(void *p) {
 	m_block b;
-	if (arena != NULL && is_valid_address(arena, p) == true) {
+	if (arena != NULL && is_valid_address(arena, p)) {
 		b = get_block(p);
 		pthread_mutex_lock(&arena->lock);
 		b->free = 1;
@@ -16,4 +16,4 @@ void free(void *p) {
 		arena->r_mapped_space -= s;
 		pthread_mutex_unlock(&arena->lock);
 	}
-}
+} 

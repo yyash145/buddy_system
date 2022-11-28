@@ -30,17 +30,17 @@ void *malloc(size_t size) {
 	{
 		arena = create_arena(s);
 		if (arena == NULL) 
-		{ // extending the heap for the first time
+		{
 			errno = ENOMEM;
 			return (NULL);
 		}
 
-		pthread_mutex_lock(&arena->lock); //locking the arena before allocation
+		pthread_mutex_lock(&arena->lock);
 		start = insert_block(arena, s);
-		pthread_mutex_unlock(&arena->lock); //unlocking the arena
+		pthread_mutex_unlock(&arena->lock);
 		if (start == NULL) 
 		{
-			errno = ENOMEM; // Error if no more memory can be allocated
+			errno = ENOMEM;
 	 	 	return(NULL);
 	 	}
  	}
@@ -54,5 +54,5 @@ void *malloc(size_t size) {
 	arena->total_space += s;
 	arena->free_space -= s;
 
- 	return(start->data); // returning the starting address of the block
+ 	return(start->data);
 }
