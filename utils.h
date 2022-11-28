@@ -1,23 +1,16 @@
 #ifndef UTILS_H_
 #define UTILS_H_ 
-#include <math.h>
-#include <errno.h>				// 
-#include <stdio.h>				// 
-#include <stdlib.h>				// 
+#include <math.h>				// power
+#include <errno.h>				// ENOMEM
+#include <stdio.h>				// Standard Input/Output
 #include <unistd.h>				// sysconfig
-#include <stdint.h>				// 
-#include <string.h>				// 
+#include <string.h>				// memset
 #include <stdbool.h>			// Used for bool
 #include <pthread.h>			// thread
-#include <sys/mman.h>			// 
-#include <sys/types.h>			// 
-
-
-
-// #include<ostream>
-// #include<sstream>
-// #include <fstream>
-
+#include <sys/mman.h>			// mmap
+// #include <stdint.h>				// 
+// #include <stdlib.h>				// 
+// #include <sys/types.h>			// 
 
 #define ll long int
 

@@ -12,12 +12,17 @@ const int smallest_block = 128;
 void logger(char *text)
 {
 	FILE *fp;
-	fp = fopen("data.txt", "a");
-	int size = sizeof(text);
-	fgets(text, size, fp);
+	char *filepath = "./data.txt";
+	fp = fopen(filepath, "a");
+	if(fp == NULL){
+		printf("Error in file opening\n");
+	}
+	// int size = sizeof(text);
+	fputs(text, fp);
 	fclose(fp);
 }
 
+  // join waits for the threads to finish
 size_t align8(size_t s)
 {
 	return align(s, 8);
