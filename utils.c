@@ -64,14 +64,14 @@ m_info create_arena(size_t size)
 			return NULL;
 		}
 		void *addr = mmap(start->data, req_size, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-		if (addr == MAP_FAILED)
+		if (addr == MAP_FAILED)			// map or unmap files or devices into memory
 		{
-			printf("Maping failed\n");
+			printf("Mapping failed\n");
 			return NULL;
 		}
-		int sat=req_size;
+		int rs=req_size;
 		int bud_chain=0;
-		arena->size = sat;
+		arena->size = rs;
 		arena = (m_info)addr;
 		start->next = arena;
 		arena->prev = start;
@@ -86,19 +86,19 @@ m_info create_arena(size_t size)
 		}
 		arena = (m_info)addr;
 		arena_head = (void *)arena;
-		arena->next = NULL;
-		arena->prev = NULL;
 		arena->size = req_size;
+		arena->prev = NULL;
+		arena->next = NULL;
 	}
 	arena->r_mapped = 0;
 	arena->free_req = 0;
+	current_arena += 1;
 	arena->free_chunk = 0;
 	arena->total_space = 0;
 	arena->r_mapped_space = 0;
 	arena->allocation_req = 0;
 	arena->total_space_max = 0;
 	arena->free_chunk = arena->size;
-	current_arena += 1;
 	return arena;
 }
 
@@ -164,7 +164,7 @@ m_block insert_block(m_info arena, size_t s)
 		while (first != NULL && first->free == 0 && first->buddy_order != order && first->size < s)
 		{
 			void *p = (void *)first->next;
-			if (p < (void *)arena->start || p > (void *)(arena->data + arena->size))
+			if (p > (void *)(arena->data + arena->size) || p < (void *)arena->start)
 			{
 				first->next = NULL;
 				first = NULL;
@@ -221,6 +221,18 @@ m_block insert_block(m_info arena, size_t s)
 	return first;
 }
 
+int get_buddy_order(size_t s)
+{
+	size_t sb = smallest_block;
+	int order = 0;
+	while(sb < s)
+	{
+		sb = 2*sb;
+		order++;
+	}
+	return order;
+}
+
 m_block join_free_chunks(m_info arena, m_block b)
 {
 	if (b->next != NULL && b->next->free != NULL)
@@ -232,18 +244,6 @@ m_block join_free_chunks(m_info arena, m_block b)
 		b->buddy_order = get_buddy_order(b->size);
 	}
 	return (b);
-}
-
-int get_buddy_order(size_t s)
-{
-	size_t sb = smallest_block;
-	int order = 0;
-	while (sb < s)
-	{
-		sb = sb * 2;
-		order++;
-	}
-	return order;
 }
 
 bool is_pow2(size_t s)
@@ -265,7 +265,6 @@ bool is_valid_address(m_info arena, void *p)
 	{
 		if (p > (void *)arena->start && p < (void *)(arena->data + arena->size))
 		{ // if the pointer is between the arena start and arena end, then it is a valid
-			// return (arena->data == get_block(p)->ptr); // we have field ptr pointing to the arena data, if b->ptr == arena->data, then b is probably (very probably) a valid block
 			if (arena->data == get_block(p)->ptr)
 				return true;
 			else
@@ -283,14 +282,13 @@ void deallocate(m_info arena, m_block b)
 		{
 			if (arena->prev == NULL)
 			{
-				if (arena->next != NULL)
+				if(arena->next == NULL)
+					arena_head	= NULL;
+				else
 				{
 					arena->next->prev = NULL;
 					arena_head = (void *)arena->next;
 				}
-				else
-					arena_head = NULL;
-
 				void *addr = (void *)arena;
 				size_t length = arena->size;
 				arena = NULL;
@@ -307,7 +305,7 @@ void deallocate(m_info arena, m_block b)
 
 void buddy_split(m_info arena, m_block b)
 {
-	b->size = b->size / 2;
+	b->size /= b->size;
 	m_block newb = (m_block)(b->data + b->size);
 	newb->prev = b;
 	newb->next = b->next;
@@ -327,39 +325,7 @@ void copy_block(m_block src, m_block dest)
 	src_data = (int *)src->ptr;
 	dest_data = (int *)dest->ptr;
 
-	for (i = 0; i * 8 > src->size && i * 8 < dest->size; i++)
-	{
+	for (i = 0; src->size < i*8 && i*8 < dest->size; i++)
 		dest_data[i] = src_data[i];
-	}
+	
 }
-
-// m_block find_free_block(m_info arena, m_block *last, size_t size) {
-// 	int order = get_buddy_order(size);
-// 	m_block start = arena->start;
-// 	while(start && !(start->free && start->buddy_order == order && start->size >= size)) {
-// 		void *p = (void *)start->next;
-// 		if (p < (void *)arena->start || p > (void *)(arena->data + arena->size)) {
-// 			start->next = NULL;
-// 			*last = start;
-// 			start = NULL;
-// 			break;
-// 		}
-// 		*last = start;
-// 		start = start->next;
-// 	}
-// 	if (!start) {
-// 		start = arena->start;
-// 		while(start && !(start->free && start->buddy_order > order && (start->size)/2 >= size)) {
-// 			void *p = (void *)start->next;
-// 			if (p < (void *)arena->start || p > (void *)(arena->data + arena->size)) {
-// 				start->next = NULL;
-// 				*last = start;
-// 				start = NULL;
-// 				break;
-// 			}
-// 			*last = start;
-// 			start = start->next;
-// 		}
-// 	}
-// 	return start;
-// }
